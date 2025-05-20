@@ -41,12 +41,14 @@ public class WebSecurityConfig {
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/", "/login", "/registration", "/error").permitAll()
+                        .requestMatchers("/css/**","/", "index","/login", "/error").permitAll()
                         .requestMatchers("/admin/**").hasAuthority("ADMIN")
                         .requestMatchers("/user/**").hasAnyAuthority("USER", "ADMIN")
                         .anyRequest().authenticated()
                 )
                 .formLogin(form -> form
+                        .loginPage("/login")
+                        .loginProcessingUrl("/process_login")
                         .successHandler(successUserHandler)
                         .permitAll()
                 )

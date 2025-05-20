@@ -1,34 +1,30 @@
 package ru.kata.spring.boot_security.demo.service;
 
-import jakarta.persistence.EntityManager;
-import jakarta.persistence.PersistenceContext;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import ru.kata.spring.boot_security.demo.exceptions.UserAlreadyExistsException;
 import ru.kata.spring.boot_security.demo.model.Role;
 import ru.kata.spring.boot_security.demo.model.User;
-import ru.kata.spring.boot_security.demo.repositories.RoleRepository;
 import ru.kata.spring.boot_security.demo.repositories.UserRepository;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 public class UserServiceImp implements UserService {
 
 
     private final UserRepository userRepository;
-    private final RoleRepository roleRepository;
+    private final RoleService roleService;
     private final PasswordEncoder passwordEncoder;
 
     @Autowired
-    public UserServiceImp(UserRepository userRepository,
-                          RoleRepository roleRepository,
+    public UserServiceImp(UserRepository userRepository, RoleService roleService,
                           PasswordEncoder passwordEncoder) {
         this.userRepository = userRepository;
-        this.roleRepository = roleRepository;
+        this.roleService = roleService;
         this.passwordEncoder = passwordEncoder;
     }
 
@@ -53,12 +49,10 @@ public class UserServiceImp implements UserService {
 
     @Transactional
     @Override
-    public void register(User user, Long roleId) {
-        if (userRepository.findByUsername(user.getUsername()).isPresent()) {
-            throw new  UserAlreadyExistsException("Пользователь с таким логином уже существует");
-        }
+    public void save(User user, List<String> roleNames) {
+        Set<Role> roles = new HashSet<>(roleService.findByNames(roleNames));
         user.setPassword(passwordEncoder.encode(user.getPassword()));
-        user.setRoles(Collections.singleton(roleRepository.findById(roleId).get()));
+        user.setRoles(roles);
         userRepository.save(user);
     }
 
@@ -71,41 +65,30 @@ public class UserServiceImp implements UserService {
 
     @Transactional
     @Override
-    public void update(User user) {
-        if (userRepository.findByUsername(user.getUsername()).isPresent()) {
-            throw new  UserAlreadyExistsException("Пользователь с таким логином уже существует");
-        }
-        // Проверяем, существует ли пользователь
+    public void update(User user, List<String> roleNames) {
         User existingUser = userRepository.findById(user.getId())
-                .orElseThrow(() -> new UsernameNotFoundException("Пользователь не найден"));
+                .orElseThrow(() -> new UsernameNotFoundException("User not found"));
 
-        // Обновляем поля, кроме пароля, если он не пустой
+        // Обновляем основные поля
         existingUser.setUsername(user.getUsername());
         existingUser.setName(user.getName());
         existingUser.setSurname(user.getSurname());
-        existingUser.setDepartment(user.getDepartment());
-        // Добавь другие поля, которые нужно обновить
+        existingUser.setDepartment(user.getDepartment   ());
 
-        // Обновляем пароль только если он не пустой
+        // Обновляем пароль, если он был изменен
         if (user.getPassword() != null && !user.getPassword().isEmpty()) {
             existingUser.setPassword(passwordEncoder.encode(user.getPassword()));
         }
 
-        // Обновляем роли
-        Set<Role> roles = user.getRoles();
-        if (roles != null) {
-            Set<Role> updatedRoles = new HashSet<>();
-            for (Role role : roles) {
-                Optional<Role> existingRole = roleRepository.findByName(role.getRoleName());
-                existingRole.ifPresent(updatedRoles::add);
-            }
-            existingUser.setRoles(updatedRoles);
+        // Преобразуем имена ролей в объекты Role
+        if (roleNames != null && !roleNames.isEmpty()) {
+            Set<Role> roles = roleNames.stream()
+                    .map(roleService::findByRoleName)
+                    .collect(Collectors.toSet());
+            existingUser.setRoles(roles);
         }
-
-        // Сохраняем обновленного пользователя
         userRepository.save(existingUser);
     }
-
 
 
 }

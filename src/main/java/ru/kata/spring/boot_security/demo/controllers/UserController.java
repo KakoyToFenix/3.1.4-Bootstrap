@@ -20,6 +20,11 @@ public class UserController {
         this.userService = userService;
     }
 
+    @GetMapping("")
+    public String showUserPage(@AuthenticationPrincipal UserDetails userDetails, Model model) {
+        model.addAttribute("user", userService.findByUsername(userDetails.getUsername()));
+        return "user/user";
+    }
 //    @GetMapping("/user")
 //    public String showUserPage(Authentication authentication, Model model) {
 //        UserDetails userDetails = (UserDetails) authentication.getPrincipal();
@@ -27,10 +32,5 @@ public class UserController {
 //        model.addAttribute("user", user);
 //        return "user";
 //    }
-@GetMapping("")
-public String showUserPage(@AuthenticationPrincipal UserDetails userDetails, Model model) {
-    model.addAttribute("user", userService.findByUsername(userDetails.getUsername()));
-    return "user/user";
-}
 }
 

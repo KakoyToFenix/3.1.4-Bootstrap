@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Admin panel</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.5/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="/css/styles.css">
+</head>
+<body>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.5/dist/js/bootstrap.bundle.min.js"></script>
+<input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+
+<!-- 1. Верхняя полоса -->
+<div class="top-header">
+    <div class="user-info">
+        <span class="username" th:text="${user.username}">username</span>
+        <span>with roles:</span>
+        <span th:each="role, stat : ${user.roles}">
+            <span th:text="${role.roleName}">ROLE</span>
+            <span th:unless="${stat.last}">, </span>
+        </span>
+    </div>
+    <form th:action="@{/logout}" th:method="POST">
+        <button type="submit" class="btn btn-outline-light logout-btn">Logout</button>
+    </form>
+</div>
+
+<!-- 2. Основной контейнер -->
+<div class="main-container">
+    <!-- Левая панель навигации -->
+    <div class="sidebar">
+        <div class="d-flex flex-column">
+            <a th:if="${#lists.contains(user.roles.![roleName], 'ADMIN')}"
+               href="/admin" class="sidebar-item active">Admin</a>
+            <a href="/user" class="sidebar-item">User</a>
+        </div>
+    </div>
+
+    <!-- 3. Основное содержимое -->
+    <div class="main-content">
+        <!-- Навигация -->
+        <ul class="nav nav-tabs mb-4">
+            <li class="nav-item">
+                <a class="nav-link"
+                   th:classappend="${activeTab == 'users'} ? 'active' : ''"
+                   th:href="@{/admin(tab='users')}">Users table</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link"
+                   th:classappend="${activeTab == 'add'} ? 'active' : ''"
+                   th:href="@{/admin(tab='add')}">Add new user</a>
+            </li>
+        </ul>
+
+        <!-- Таблица пользователей -->
+        <div th:if="${activeTab == 'users'}">
+            <div class="table-responsive">
+                <table class="table user-table mb-4">
+                    <thead>
+                    <tr>
+                        <th colspan="8" class="table-header">All Users</th>
+                    </tr>
+                    <tr>
+                        <th>ID</th>
+                        <th>Username</th>
+                        <th>First Name</th>
+                        <th>Last Name</th>
+                        <th>Department</th>
+                        <th>Role</th>
+                        <th>Edit</th>
+                        <th>Delete</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr th:each="user : ${allUsers}">
+                        <td th:text="${user.id}"></td>
+                        <td th:text="${user.username}"></td>
+                        <td th:text="${user.name}"></td>
+                        <td th:text="${user.surname}"></td>
+                        <td th:text="${user.department}"></td>
+                        <td>
+                            <span th:each="role, stat : ${user.roles}">
+                                <span th:text="${role.roleName}"></span>
+                                <span th:unless="${stat.last}">, </span>
+                            </span>
+                        </td>
+                        <td>
+                            <button class="btn btn-sm btn-primary"
+                                    data-bs-toggle="modal"
+                                    th:attr="data-bs-target='#editModal'+${user.id}">
+                                Edit
+                            </button>
+                        </td>
+                        <td>
+                            <button class="btn btn-sm btn-danger"
+                                    data-bs-toggle="modal"
+                                    th:attr="data-bs-target='#deleteModal'+${user.id}">
+                                Delete
+                            </button>
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Модальные окна редактирования для каждого пользователя -->
+            <div th:each="user : ${allUsers}"
+                 th:id="'editModal'+${user.id}"
+                 class="modal fade" tabindex="-1" aria-hidden="true">
+                <div class="modal-dialog modal-dialog-centered">
+                    <div class="modal-content"
+                         style="border-radius: 8px; border: none; box-shadow: 0 4px 20px rgba(0,0,0,0.15);">
+                        <div class="modal-header border-0" style="padding: 20px 24px 16px;">
+                            <h5 class="modal-title"
+                                style="font-size: 1.125rem; font-weight: 600; color: #212529;">
+                                Edit user</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal"
+                                    aria-label="Close"
+                                    style="margin: -0.5rem -0.5rem -0.5rem auto;"></button>
+                        </div>
+                        <div class="modal-body" style="padding: 0 24px;">
+                            <form th:action="@{/admin/editUser}" method="post">
+                                <!-- ID (readonly) -->
+                                <div class="mb-3">
+                                    <label class="form-label"
+                                           style="font-size: 0.875rem; color: #6c757d;">ID</label>
+                                    <div class="form-control" style="background-color: #f8f9fa;"
+                                         th:text="${user.id}"></div>
+
+                                    <!-- Username -->
+                                    <label class="form-label"
+                                           style="font-size: 0.875rem; color: #6c757d;">Username</label>
+                                    <input type="text" class="form-control" th:value="${user.username}"
+                                           name="username">
+
+                                    <!-- First Name -->
+                                    <label class="form-label" style="font-size: 0.875rem; color: #6c757d;">First
+                                        name</label>
+                                    <input type="text" class="form-control" th:value="${user.name}"
+                                           name="name">
+
+                                    <!-- Last Name -->
+                                    <label class="form-label" style="font-size: 0.875rem; color: #6c757d;">Last
+                                        name</label>
+                                    <input type="text" class="form-control" th:value="${user.surname}"
+                                           name="surname">
+
+
+                                    <!-- Department -->
+                                    <label class="form-label"
+                                           style="font-size: 0.875rem; color: #6c757d;">Department</label>
+                                    <input type="text" class="form-control" th:value="${user.department}"
+                                           name="department">
+
+                                    <!-- Password (optional) -->
+                                    <label class="form-label" style="font-size: 0.875rem; color: #6c757d;">Password
+                                        (leave empty to keep current)</label>
+                                    <input type="password" class="form-control" name="password">
+
+                                <!-- Выпадающий список с множественным выбором ролей -->
+                                    <label class="form-label"
+                                           style="font-size: 0.875rem; color: #6c757d;">Role</label>
+
+                                    <select class="form-select w-100" multiple size="2" id="editRole"
+                                            name="checkBoxRoles">
+                                        <option th:each="role : ${allRoles}"
+                                                th:text="${role.roleName}" th:selected="${role.roleName}"></option>
+                                    </select>
+                                    <div class="form-text">Для множественного выбора удерживайте Ctrl
+                                        (Windows) или Command (Mac)
+                                    </div>
+                                </div>
+
+                                <!-- Кнопка внутри модального окна -->
+                                <div class="modal-footer border-0" style="padding: 16px 0 20px;">
+                                    <button type="button" class="btn btn-outline-secondary"
+                                            data-bs-dismiss="modal"
+                                            style="padding: 8px 16px; margin-right: 8px;">Close
+                                    </button>
+                                    <input type="hidden" name="id" th:value="${user.id}">
+                                    <input type="hidden" th:name="${_csrf.parameterName}"
+                                           th:value="${_csrf.token}"/>
+                                    <button type="submit" class="btn btn-primary"
+                                            style="padding: 8px 16px;">
+                                        Edit
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+
+            <!-- Модальные окна для удаления к каждому пользователю -->
+            <div th:each="user : ${allUsers}"
+                 th:id="'deleteModal'+${user.id}"
+                 class="modal fade" tabindex="-1" aria-hidden="true">
+                <div class="modal-dialog modal-dialog-centered">
+                    <div class="modal-content"
+                         style="border-radius: 8px; border: none; box-shadow: 0 4px 20px rgba(0,0,0,0.15);">
+                        <div class="modal-header border-0" style="padding: 20px 24px 16px;">
+                            <h5 class="modal-title"
+                                style="font-size: 1.125rem; font-weight: 600; color: #212529;">
+                                Delete user</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal"
+                                    aria-label="Close"
+                                    style="margin: -0.5rem -0.5rem -0.5rem auto;"></button>
+                        </div>
+                        <div class="modal-body" style="padding: 0 24px;">
+                            <div class="mb-3">
+
+                                <!-- Айди -->
+                                <div style="font-size: 0.875rem; color: #6c757d; margin-bottom: 4px;">ID
+                                </div>
+                                <div style="font-size: 1rem; padding: 6px 0; border-bottom: 1px solid #e9ecef;"
+                                     th:text="${user.id}"></div>
+
+                                <!-- Логин -->
+                                <div style="font-size: 0.875rem; color: #6c757d; margin-bottom: 4px;">
+                                    Username
+                                </div>
+                                <div style="font-size: 1rem; padding: 6px 0; border-bottom: 1px solid #e9ecef;"
+                                     th:text="${user.username}"></div>
+
+                                <!-- Имя -->
+                                <div style="font-size: 0.875rem; color: #6c757d; margin-bottom: 4px;">First
+                                    name
+                                </div>
+                                <div style="font-size: 1rem; padding: 6px 0; border-bottom: 1px solid #e9ecef;"
+                                     th:text="${user.name}"></div>
+
+                                <!-- Фамилия -->
+                                <div style="font-size: 0.875rem; color: #6c757d; margin-bottom: 4px;">Last
+                                    name
+                                </div>
+                                <div style="font-size: 1rem; padding: 6px 0; border-bottom: 1px solid #e9ecef;"
+                                     th:text="${user.surname}"></div>
+
+
+                                <!-- Департамент -->
+                                <div style="font-size: 0.875rem; color: #6c757d; margin-bottom: 4px;">
+                                    Department
+                                </div>
+                                <div style="font-size: 1rem; padding: 6px 0; border-bottom: 1px solid #e9ecef;"
+                                     th:text="${user.department}"></div>
+
+                                <!-- Роли -->
+                                <div style="font-size: 0.875rem; color: #6c757d; margin-bottom: 4px;">Role
+                                </div>
+                                <div style="font-size: 1rem; padding: 6px 0; border-bottom: 1px solid #e9ecef;">
+                        <span th:each="role, stat : ${user.roles}">
+                            <span th:text="${role.roleName}"></span>
+                            <span th:unless="${stat.last}">, </span>
+                        </span>
+                                </div>
+                            </div>
+                        </div>
+
+
+                        <div class="modal-footer border-0" style="padding: 16px 24px 20px;">
+                            <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal"
+                                    style="padding: 8px 16px; margin-right: 8px;">Close
+                            </button>
+                            <form th:action="@{/admin/deleteUser}" method="post">
+                                <input type="hidden" name="id" th:value="${user.id}">
+                                <input type="hidden" th:name="${_csrf.parameterName}"
+                                       th:value="${_csrf.token}"/>
+                                <button type="submit" class="btn btn-danger" style="padding: 8px 16px;">
+                                    Delete
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+        <!-- Форма добавления пользователя -->
+        <div th:if="${activeTab == 'add'}">
+            <div class="card mt-3">
+                <div class="card-body">
+
+                    <form th:action="@{/admin/addUser}" method="post">
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <h5 class="table-header">Add New User</h5>
+                                <label for="username" class="form-label">Username</label>
+                                <input type="text" class="form-control" id="username" name="username" required>
+
+                                <label for="name" class="form-label">First Name</label>
+                                <input type="text" class="form-control" id="name" name="name" required>
+
+                                <label for="surname" class="form-label">Last Name</label>
+                                <input type="text" class="form-control" id="surname" name="surname" required>
+
+                                <label for="department" class="form-label">Department</label>
+                                <input type="text" class="form-control" id="department" name="department" required>
+
+                                <label for="password" class="form-label">Password</label>
+                                <input type="password" class="form-control" id="password" name="password" required>
+
+                                <!-- РОЛИ -->
+                                <label class="form-label">Roles</label>
+                                <select class="form-select w-100" multiple size="2" id="addRole"
+                                        name="checkBoxRoles">
+                                    <option th:each="role : ${allRoles}"
+                                            th:text="${role.roleName}" th:selected="${role.roleName}"></option>
+                                </select>
+                                <div class="form-text">Hold Ctrl (Windows) or Command (Mac) to select multiple</div>
+                                <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+                                <button type="submit" class="btn btn-primary">Add User</button>
+                            </div>
+                        </div>
+                    </form>
+
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+</body>
+</html>

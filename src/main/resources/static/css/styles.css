@@ -1,0 +1,173 @@
+.login-container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 40vh;
+    flex-direction: column;
+}
+.text-size {
+    width: 300px;
+    height: 50px;
+    font-size: 20px;
+}
+
+
+
+
+body {
+    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+    margin: 0;
+    padding: 0;
+    background-color: #f8f9fa;
+}
+
+/* Top header bar */
+.top-header {
+    background-color: #6c757d;
+    padding: 12px 24px;
+    color: white;
+    height: 52px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 1000;
+}
+
+.user-info {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 16px;
+}
+
+.username {
+    font-weight: 600;
+}
+
+.logout-btn {
+    border: 1px solid #dee2e6;
+    padding: 4px 12px;
+    font-size: 14px;
+    height: 32px;
+}
+/* Titles */
+.page-title {
+    color: #212529;
+    font-size: 35px;
+    font-weight: 500;
+    margin-bottom: 8px;
+}
+
+.section-title {
+    color: #6c757d;
+    font-size: 16px;
+    font-weight: 400;
+    margin-bottom: 20px;
+}
+/* Новые стили для заголовка */
+.all-users-title {
+    color: #4a4a4a;
+    font-size: 15px;
+    font-weight: 500;
+    margin: 8px 0 12px 0;
+    letter-spacing: 0.2px;
+    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+}
+
+
+/* Main layout */
+body {
+    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+    margin: 0;
+    padding: 0;
+    background-color: #f8f9fa;
+}
+
+/* 2. Main container with sidebar and content */
+.main-container {
+    display: flex;
+    min-height: 100vh;
+    padding-top: 52px; /* Отступ под верхнюю панель */
+}
+
+/* Левая панель навигации (фиксированная) */
+.sidebar {
+    width: 220px;
+    background-color: white;
+    border-right: 1px solid #dee2e6;
+    padding: 20px 0;
+    position: fixed;
+    top: 52px;
+    bottom: 0;
+    left: 0;
+    z-index: 900;
+}
+
+.sidebar-item {
+    display: block;
+    padding: 10px 20px;
+    color: #495057;
+    text-decoration: none;
+    transition: all 0.2s;
+    font-weight: 500;
+    border-left: 3px solid transparent;
+}
+
+.sidebar-item:hover {
+    background-color: #f8f9fa;
+    color: #0d6efd;
+}
+
+.sidebar-item.active {
+    border-left: 3px solid #0d6efd;
+    color: #0d6efd;
+    background-color: #f8f9fa;
+}
+
+/* 3. Основное содержимое */
+.main-content {
+    flex: 1;
+    margin-left: 220px; /* Ширина боковой панели */
+    padding: 24px;
+    background-color: #f8f9fa;
+}
+
+/* Table styling */
+.user-table {
+    background-color: white;
+    border-radius: 4px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+}
+
+.user-table thead {
+    background-color: #f8f9fa;
+    border-bottom: 2px solid #e9ecef;
+}
+
+.user-table th {
+    padding: 12px 16px;
+    font-weight: 600;
+    color: #495057;
+    font-size: 14px;
+}
+
+.user-table td {
+    padding: 12px 16px;
+    border-bottom: 1px solid #e9ecef;
+    font-size: 14px;
+}
+
+
+.table-header {
+    background-color: #e9ecef !important;
+    color: #343a40 !important;
+    font-size: 18px !important;
+    font-weight: 600 !important;
+    padding: 12px 16px !important;
+    letter-spacing: 0.5px;
+}
+
