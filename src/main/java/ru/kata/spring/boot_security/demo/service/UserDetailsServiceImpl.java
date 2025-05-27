@@ -2,15 +2,15 @@ package ru.kata.spring.boot_security.demo.service;
 
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
+
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
-import ru.kata.spring.boot_security.demo.model.User;
+
 import ru.kata.spring.boot_security.demo.repositories.UserRepository;
 
-import java.util.stream.Collectors;
+
 
 
 @Service
@@ -25,17 +25,8 @@ public class UserDetailsServiceImpl implements UserDetailsService {
 
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        User user = userRepository.findByUsername(username)
+        return userRepository.findByUsername(username)
                 .orElseThrow(() -> new UsernameNotFoundException("User not found"));
-
-        // ИСПРАВЛЕНО: Правильное преобразование ролей в GrantedAuthority
-        return new org.springframework.security.core.userdetails.User(
-                user.getUsername(),
-                user.getPassword(),
-                user.getRoles().stream()
-                        .map(role -> new SimpleGrantedAuthority(role.getAuthority())) // Используем getAuthority()
-                        .collect(Collectors.toList())
-        );
     }
 
 
